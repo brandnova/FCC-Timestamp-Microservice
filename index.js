@@ -18,38 +18,35 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-// Your first API endpoint...
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
-});
+const isInvalidDate = (date) => date.toUTCString() === 'Invalid Date';
 
-// Timestamp endpoint
-app.get("/api/timestamp/:date_string", function (req, res) {
-  var dateString = req.params.date_string;
-  var date;
+// your first API endpoint... 
+app.get("/api/:date", function (req, res) {
+  let date = new Date(req.params.date);
 
-  // If the dateString is a valid Unix timestamp
-  if (/^\d{5,}$/.test(dateString)) {
-    // Convert Unix timestamp to a date object
-    date = new Date(parseInt(dateString));
-  } else {
-    // Convert a human-readable date string to a date object
-    date = new Date(dateString);
+  if(isInvalidDate(date)) {
+    date = new Date(+req.params.date);
   }
 
-  // If the date is valid
-  if (date instanceof Date && !isNaN(date)) {
-    res.json({
-      unix: date.getTime(),
-      utc: date.toUTCString()
-    });
-  } else {
-    // If the date is invalid
-    res.json({
-      error: "Invalid Date"
-    });
+  if(isInvalidDate(date)) {
+    res.json({ error: 'Invalid date' });
+    return;
   }
+
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString(),
+  });
 });
+
+app.get("/api/",(req, res) => {
+  res.json({
+    unix: new Date().getTime(),
+    utc: new Date().toUTCString(),
+  });
+});
+
+
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
